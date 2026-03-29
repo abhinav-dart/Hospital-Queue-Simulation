@@ -434,6 +434,56 @@ No immediate changes needed. Monitor during peak periods.
 """)
 
 # ─────────────────────────────────────────────
+#  MATHEMATICAL MODEL
+# ─────────────────────────────────────────────
+st.markdown('<div class="section-title">📐 Mathematical Model</div>', unsafe_allow_html=True)
+
+with st.expander("📐 M/M/c Queue — Formulas & Explanation", expanded=True):
+    st.markdown("""
+This simulation is based on the **M/M/c Queue Model** — a standard mathematical model used to study waiting lines where:
+- Patients arrive **randomly** (Poisson process)
+- Each consultation takes a **random** amount of time (Exponential distribution)
+- There are **c doctors** serving patients simultaneously
+""")
+
+    f1, f2, f3 = st.columns(3)
+
+    with f1:
+        st.markdown("""
+<div style="background:#f8fbff; border:1.5px solid #d0e3f0; border-radius:10px; padding:1.1rem 1.2rem; text-align:center;">
+  <div style="font-size:.78rem; font-weight:600; color:#6b7c93; text-transform:uppercase; letter-spacing:.8px; margin-bottom:.5rem;">Traffic Intensity</div>
+  <div style="font-size:1.6rem; color:#0a2342; font-family:'Georgia', serif; margin-bottom:.6rem;">ρ = λ / (c × μ)</div>
+  <div style="font-size:.82rem; color:#6b7c93;">Measures how loaded the system is.<br>Must be &lt; 1 for a stable queue.<br><b>λ</b> = arrival rate &nbsp;|&nbsp; <b>μ</b> = service rate &nbsp;|&nbsp; <b>c</b> = doctors</div>
+</div>
+""", unsafe_allow_html=True)
+
+    with f2:
+        st.markdown("""
+<div style="background:#f8fbff; border:1.5px solid #d0e3f0; border-radius:10px; padding:1.1rem 1.2rem; text-align:center;">
+  <div style="font-size:.78rem; font-weight:600; color:#6b7c93; text-transform:uppercase; letter-spacing:.8px; margin-bottom:.5rem;">Avg Waiting Time in Queue</div>
+  <div style="font-size:1.6rem; color:#0a2342; font-family:'Georgia', serif; margin-bottom:.6rem;">W<sub>q</sub> = L<sub>q</sub> / λ</div>
+  <div style="font-size:.82rem; color:#6b7c93;">Average time a patient waits <i>before</i> seeing a doctor.<br><b>L<sub>q</sub></b> = avg number of patients in queue</div>
+</div>
+""", unsafe_allow_html=True)
+
+    with f3:
+        st.markdown("""
+<div style="background:#f8fbff; border:1.5px solid #d0e3f0; border-radius:10px; padding:1.1rem 1.2rem; text-align:center;">
+  <div style="font-size:.78rem; font-weight:600; color:#6b7c93; text-transform:uppercase; letter-spacing:.8px; margin-bottom:.5rem;">Total Time in System</div>
+  <div style="font-size:1.6rem; color:#0a2342; font-family:'Georgia', serif; margin-bottom:.6rem;">W = W<sub>q</sub> + 1/μ</div>
+  <div style="font-size:.82rem; color:#6b7c93;">Total time from arrival to leaving.<br><b>1/μ</b> = avg consultation duration</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(f"""
+**Current simulation values:**
+- λ = `{arrival_rate:.4f}` patients/min &nbsp;|&nbsp; μ = `{service_rate:.4f}` patients/min &nbsp;|&nbsp; c = `{num_doctors}` doctors
+- ρ = `{rho:.3f}` → {"✅ Stable system" if rho < 1 else "⚠️ Unstable — queue grows without bound"}
+- Avg waiting time (Wq) = **{avg_wait:.2f} min** &nbsp;|&nbsp; Total time (W) = **{avg_wait + service_interval:.2f} min**
+""")
+
+# ─────────────────────────────────────────────
 #  KEY TERMS
 # ─────────────────────────────────────────────
 with st.expander("📖 Key Terms & Definitions"):
