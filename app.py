@@ -183,27 +183,22 @@ def simulate(num_patients, arrival_rate, service_rate, num_doctors):
     current_time = 0.0
     records = []
     queue_length_over_time = []
-    in_queue = 0  # track how many are waiting
 
     for i in range(num_patients):
         current_time += random.expovariate(arrival_rate)
         next_doc = doctor_free.index(min(doctor_free))
 
-        # if doctor is busy, patient joins queue
-        if doctor_free[next_doc] > current_time:
-            in_queue += 1
-
         start = max(current_time, doctor_free[next_doc])
-        wait = start - current_time          # 0 if doctor was free, >0 if had to wait
+        wait = start - current_time
         svc = random.expovariate(service_rate)
         depart = start + svc
         doctor_free[next_doc] = depart
 
-        # once service starts, patient leaves queue
-        if wait > 0:
-            in_queue = max(0, in_queue - 1)
-
-        queue_length_over_time.append(in_queue)
+        # queue length = how many doctors are still busy after assigning this patient
+        # that means those patients are waiting ahead — correct Lq approximation
+        busy_doctors = sum(1 for t in doctor_free if t > current_time)
+        q_len = max(0, busy_doctors - num_doctors)
+        queue_length_over_time.append(q_len)
 
         records.append({
             "Patient": i + 1,
