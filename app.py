@@ -145,15 +145,14 @@ with st.sidebar:
     num_patients = st.slider("👥 Number of Patients", 20, 300, 80, step=10)
     st.markdown("")
 
-    st.markdown("**Arrival Rate (λ)**")
-    arrival_interval = st.slider("Avg minutes between arrivals", 2, 15, 5)
-    arrival_rate = 1 / arrival_interval
+    arrival_rate_hr = st.slider("🚶 Patient Arrival Rate λ (patients/hour)", 1, 60, 12)
+    arrival_rate = arrival_rate_hr / 60
 
-    st.markdown("**Service Rate (μ)**")
-    service_interval = st.slider("Avg consultation minutes per patient", 3, 20, 8)
-    service_rate = 1 / service_interval
+    service_rate_hr = st.slider("🩺 Service Rate μ (patients/hour per doctor)", 1, 60, 8)
+    service_rate = service_rate_hr / 60
+    service_interval = 60 / service_rate_hr
 
-    num_doctors = st.slider("🩺 Number of Doctors", 1, 8, 2)
+    num_doctors = st.slider("👨‍⚕️ Number of Doctors", 1, 8, 2)
 
     st.markdown("---")
     st.markdown(
