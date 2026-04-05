@@ -179,42 +179,64 @@ st.markdown("""
 # ─────────────────────────────────────────────
 def simulate(num_patients, arrival_rate, service_rate, num_doctors):
     random.seed(42)
+
+    # Step 1: generate all arrival times upfront
+    arrival_times = []
+    t = 0.0
+    for _ in range(num_patients):
+        t += random.expovariate(arrival_rate)
+        arrival_times.append(t)
+
+    # Step 2: assign each patient to a doctor
     doctor_free = [0.0] * num_doctors
-    current_time = 0.0
-    records = []
-    queue_length_over_time = []
+    service_start_times = []
+    waiting_times = []
+    service_times = []
+    departure_times = []
 
     for i in range(num_patients):
-        current_time += random.expovariate(arrival_rate)
+        arr = arrival_times[i]
         next_doc = doctor_free.index(min(doctor_free))
-
-        start = max(current_time, doctor_free[next_doc])
-        wait = start - current_time
+        start = max(arr, doctor_free[next_doc])
+        wait = start - arr
         svc = random.expovariate(service_rate)
         depart = start + svc
         doctor_free[next_doc] = depart
 
-        # queue length = how many doctors are still busy after assigning this patient
-        # that means those patients are waiting ahead — correct Lq approximation
-        busy_doctors = sum(1 for t in doctor_free if t > current_time)
-        q_len = max(0, busy_doctors - num_doctors)
-        queue_length_over_time.append(q_len)
+        service_start_times.append(start)
+        waiting_times.append(wait)
+        service_times.append(svc)
+        departure_times.append(depart)
 
+    # Step 3: calculate true queue length at each arrival moment
+    # Lq = patients who arrived before t but haven't started service yet
+    queue_length_over_time = []
+    for i in range(num_patients):
+        t = arrival_times[i]
+        lq = sum(
+            1 for j in range(i)
+            if arrival_times[j] <= t and service_start_times[j] > t
+        )
+        queue_length_over_time.append(lq)
+
+    # Step 4: build dataframe
+    records = []
+    for i in range(num_patients):
         records.append({
             "Patient": i + 1,
-            "Arrival (min)": round(current_time, 2),
-            "Service Start (min)": round(start, 2),
-            "Waiting Time (min)": round(wait, 2),
-            "Consultation (min)": round(svc, 2),
-            "Departure (min)": round(depart, 2),
+            "Arrival (min)": round(arrival_times[i], 2),
+            "Service Start (min)": round(service_start_times[i], 2),
+            "Waiting Time (min)": round(waiting_times[i], 2),
+            "Consultation (min)": round(service_times[i], 2),
+            "Departure (min)": round(departure_times[i], 2),
         })
 
     df = pd.DataFrame(records)
-    total_time = max(doctor_free)
-    total_svc = df["Consultation (min)"].sum()
+    total_time = max(departure_times)
+    total_svc = sum(service_times)
     utilization = total_svc / (num_doctors * total_time)
-    avg_wait = df["Waiting Time (min)"].mean()
-    max_wait = df["Waiting Time (min)"].max()
+    avg_wait = np.mean(waiting_times)
+    max_wait = np.max(waiting_times)
     avg_queue = np.mean(queue_length_over_time)
 
     return df, avg_wait, max_wait, utilization, avg_queue, queue_length_over_time
